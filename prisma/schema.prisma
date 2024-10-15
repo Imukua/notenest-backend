@@ -12,3 +12,24 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+
+model User {
+  id            Int             @id @default(autoincrement())
+  username      String          @unique
+  email         String          @unique
+  passwordHash  String
+  createdAt     DateTime        @default(now())
+  journalEntries JournalEntry[]  @relation("UserJournalEntries")
+}
+
+model JournalEntry {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  category  String
+  date      DateTime @default(now())
+  userId    Int
+  user      User     @relation("UserJournalEntries", fields: [userId], references: [id])
+}
+
