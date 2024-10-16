@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { LocalGuard } from './guards/local.guard';
 import { Request } from 'express';
 import { AuthPayloadDto } from './dto/auth.dto';
+import { JwtAuthGuard } from './guards/jwt.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +18,12 @@ export class AuthController {
   @Post('register')
   register(@Body() body: AuthPayloadDto) {
     return this.authService.register(body);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  logout(@Req() req: Request) {
+    return this.authService.logout(req.user);
   }
 
 }

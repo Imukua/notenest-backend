@@ -3,50 +3,55 @@ import { Auth } from './auth';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'src/prisma/prisma.service';
 
-const fakeUsers = [ 
-    {
-        id: 1,
-        username: 'admin',
-        passwordHash: 'admin'
-    },
-    {
-        id: 2,
-        username: 'user',
-        passwordHash: 'user'
-    }
-];
+
+
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService) {}
+    constructor(private jwtService: JwtService, private prismaservice: PrismaService) {}
 
     private async hashPassword(password: string): Promise<string> {
       const saltRounds = 10;
       return bcrypt.hash(password, saltRounds);
     }
 
-    async register(payload: AuthPayloadDto) {
-      const existingUser = fakeUsers.find(user => user.username === payload.username);
+    async register(payload: AuthPayloadDto) {    
+
+      const existingUser = await this.prismaservice.user.findUnique({
+        where: {
+          username: payload.username
+        }
+      })
       if (existingUser) throw new HttpException('User already exists', 400);
   
-      const hashedPassword = await this.hashPassword(payload.password);  // Hash the password
+      const hashedPassword = await this.hashPassword(payload.password); 
       const user = {
-          id: fakeUsers.length + 1,
           username: payload.username,
-          passwordHash: hashedPassword  // Use the hashed password here
+          passwordHash: hashedPassword, 
       };
-      console.log(user);
+      const newUser = await this.prismaservice.user.create({
+        data: user
+      });
   
-      fakeUsers.push(user);
       const { passwordHash, ...safeUser } = user;
       return safeUser;
   }
 
 
     async login({username, password}: AuthPayloadDto) {
-        const user = fakeUsers.find(user => user.username === username && user.passwordHash === password);
-        if (!user) return null;
-        const{passwordHash , ...payload} = user;
+      const existingUser = await this.prismaservice.user.findUnique({
+        where: {
+          username: username
+        }
+      })
+
+        if (!existingUser) return null;
+        const isPasswordMatching = await bcrypt.compare(password, existingUser.passwordHash);
+        if (!isPasswordMatching) {
+        throw new HttpException('Current password is incorrect', 400);
+    }
+        const{passwordHash , ...payload} = existingUser;
 
         const accessToken = this.jwtService.sign(payload, {
             secret: "process.env.JWT_ACCESS_TOKEN_SECRET",
@@ -58,15 +63,50 @@ export class AuthService {
             expiresIn: '7d',
           });
 
+          await this.deleteExpiredTokens(existingUser.id);
+
+          await this.createRefreshToken(existingUser.id, refreshToken, new Date(Date.now() + 1000 * 60 * 60 * 24 * 7));
+          
 
       
           return {
             accessToken,
             refreshToken,
             user: {
-              id: user.id,
-              username: user.username,
+              id: existingUser.id,
+              username: existingUser.username,
             },
           };
+
+    }
+
+    async logout(user): Promise<void> {
+      
+      await this.prismaservice.refreshToken.deleteMany({
+        where: {
+          userId: user.id, 
+        },
+      });
+    }
+
+    async deleteExpiredTokens(userId: number): Promise<void> {
+      await this.prismaservice.refreshToken.deleteMany({
+        where: {
+          userId,
+          expiry: {
+            lt: new Date(), 
+          },
+        },
+      });
+    }
+  
+    async createRefreshToken(userId: number, token: string, expiry: Date): Promise<{}> {
+      return this.prismaservice.refreshToken.create({
+        data: {
+          token,
+          expiry,
+          userId,  
+        },
+      });
     }
 }
