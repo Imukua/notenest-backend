@@ -4,6 +4,8 @@ import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdatePasswordDto } from './dto/update.password.dto';
+import { UpdateUsernameDto } from './dto/update.username.dto';
 
 
 
@@ -89,7 +91,53 @@ export class AuthService {
       });
     }
 
-    async deleteExpiredTokens(userId: number): Promise<void> {
+    async updateUsername(userId,updateUsernameDto: UpdateUsernameDto): Promise<void> {
+      const { newUsername } = updateUsernameDto;
+  
+      // Check if the new username is already taken
+      const existingUser = await this.prismaservice.user.findUnique({
+        where: { username: newUsername },
+      });
+  
+      if (existingUser) {
+        throw new HttpException('Username already taken', 400);
+      }
+  
+      // Update the username
+      await this.prismaservice.user.update({
+        where: { id: userId },
+        data: { username: newUsername },
+      });
+    }
+  
+    async updatePassword(userId,updatePasswordDto: UpdatePasswordDto): Promise<void> {
+      const { currentPassword, newPassword } = updatePasswordDto;
+  
+      // Find the user
+      const user = await this.prismaservice.user.findUnique({
+        where: { id: userId },
+      });
+  
+      if (!user) {
+        throw new HttpException('User not found', 400);
+      }
+  
+      // Check if the current password is correct
+      const isPasswordMatching = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isPasswordMatching) {
+        throw new HttpException('Current password is incorrect', 400);
+      }
+  
+      // Hash the new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+  
+      // Update the password
+      await this.prismaservice.user.update({
+        where: { id: userId },
+        data: { passwordHash: hashedNewPassword },
+      });
+    }
+    async deleteExpiredTokens(userId): Promise<void> {
       await this.prismaservice.refreshToken.deleteMany({
         where: {
           userId,
@@ -100,7 +148,7 @@ export class AuthService {
       });
     }
   
-    async createRefreshToken(userId: number, token: string, expiry: Date): Promise<{}> {
+    async createRefreshToken(userId, token: string, expiry: Date): Promise<{}> {
       return this.prismaservice.refreshToken.create({
         data: {
           token,
