@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Auth } from './auth';
 import { AuthPayloadDto } from './dto/auth.dto';
+import { JwtService } from '@nestjs/jwt';
 
 const fakeUsers = [ 
     {
@@ -16,10 +17,30 @@ const fakeUsers = [
 ];
 @Injectable()
 export class AuthService {
-    validateUser({username, passwordHash}: AuthPayloadDto) {
-        const user = fakeUsers.find(user => user.username === username && user.passwordHash === passwordHash);
+    constructor(private jwtService: JwtService) {}
+    
+    login({username, password}: AuthPayloadDto) {
+        const user = fakeUsers.find(user => user.username === username && user.passwordHash === password);
         if (!user) return null;
+        const{passwordHash , ...payload} = user;
 
-
+        const accessToken = this.jwtService.sign(payload, {
+            secret: "process.env.JWT_ACCESS_TOKEN_SECRET",
+            expiresIn: '15m',
+          });
+      
+          const refreshToken = this.jwtService.sign(payload, {
+            secret: "process.env.JWT_REFRESH_TOKEN_SECRET",
+            expiresIn: '7d',
+          });
+      
+          return {
+            accessToken,
+            refreshToken,
+            user: {
+              id: user.id,
+              username: user.username,
+            },
+          };
     }
 }
