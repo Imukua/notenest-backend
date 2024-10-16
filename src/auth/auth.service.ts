@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Auth } from './auth';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -17,9 +17,22 @@ const fakeUsers = [
 ];
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService) {}
+    constructor(private jwtService: JwtService,
+    ) {}
+
+    async register(payload: AuthPayloadDto) {
+        const user = {
+            id: fakeUsers.length + 1,
+            username: payload.username,
+            passwordHash: payload.password
+        };
+        const existingUser = fakeUsers.find(user => user.username === payload.username);
+        if (existingUser) throw new HttpException('User already exists', 400);
+        fakeUsers.push(user);
+        return user;
+    }
     
-    login({username, password}: AuthPayloadDto) {
+    async login({username, password}: AuthPayloadDto) {
         const user = fakeUsers.find(user => user.username === username && user.passwordHash === password);
         if (!user) return null;
         const{passwordHash , ...payload} = user;
@@ -33,6 +46,8 @@ export class AuthService {
             secret: "process.env.JWT_REFRESH_TOKEN_SECRET",
             expiresIn: '7d',
           });
+
+
       
           return {
             accessToken,
