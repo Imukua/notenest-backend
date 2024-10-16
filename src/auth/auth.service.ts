@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Auth } from './auth';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
 const fakeUsers = [ 
     {
@@ -17,21 +18,31 @@ const fakeUsers = [
 ];
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService,
-    ) {}
+    constructor(private jwtService: JwtService) {}
+
+    private async hashPassword(password: string): Promise<string> {
+      const saltRounds = 10;
+      return bcrypt.hash(password, saltRounds);
+    }
 
     async register(payload: AuthPayloadDto) {
-        const user = {
-            id: fakeUsers.length + 1,
-            username: payload.username,
-            passwordHash: payload.password
-        };
-        const existingUser = fakeUsers.find(user => user.username === payload.username);
-        if (existingUser) throw new HttpException('User already exists', 400);
-        fakeUsers.push(user);
-        return user;
-    }
-    
+      const existingUser = fakeUsers.find(user => user.username === payload.username);
+      if (existingUser) throw new HttpException('User already exists', 400);
+  
+      const hashedPassword = await this.hashPassword(payload.password);  // Hash the password
+      const user = {
+          id: fakeUsers.length + 1,
+          username: payload.username,
+          passwordHash: hashedPassword  // Use the hashed password here
+      };
+      console.log(user);
+  
+      fakeUsers.push(user);
+      const { passwordHash, ...safeUser } = user;
+      return safeUser;
+  }
+
+
     async login({username, password}: AuthPayloadDto) {
         const user = fakeUsers.find(user => user.username === username && user.passwordHash === password);
         if (!user) return null;
