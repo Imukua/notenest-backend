@@ -1,5 +1,5 @@
 export class AuthPayloadDto {
   username: string;
 
-  passwordHash: string;
+  password: string;
 }
