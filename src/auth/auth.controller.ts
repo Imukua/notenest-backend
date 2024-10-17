@@ -14,8 +14,8 @@ import { JwtRefreshGuard } from './guards/jwt.refresh.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('login')
   @UseGuards(LocalGuard)
+  @Post('login')
   login(@Req() req: Request) {
     return req.user;
   }
@@ -25,8 +25,8 @@ export class AuthController {
     return this.authService.register(body);
   }
 
+  @UseGuards(LocalGuard)
   @Post('logout')
-  @UseGuards(JwtAuthGuard)
   logout(@Req() req: Request) {
     console.log(req.user);
     return this.authService.logout(req.user);
@@ -39,8 +39,8 @@ export class AuthController {
     return this.authService.refresh(user.id,body);
   }
 
-  @Patch('username')
-  @UseGuards(JwtAuthGuard) 
+  @UseGuards(JwtAuthGuard)
+  @Patch('username') 
   async updateUsername(
     @Req() req: Request,
     @Body() updateUsernameDto: UpdateUsernameDto,
@@ -48,13 +48,12 @@ export class AuthController {
     const user = req.user as JwtPayload; 
     console.log(user); 
     
-    // Extract user ID from the request
     await this.authService.updateUsername(user.id, updateUsernameDto);
     return HttpStatus.OK;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('password')
-  @UseGuards(JwtAuthGuard) // Protect this route
   async updatePassword(
     @Req() req: Request,
     @Body() updatePasswordDto: UpdatePasswordDto,
