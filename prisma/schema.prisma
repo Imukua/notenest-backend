@@ -24,7 +24,7 @@ model User {
 }
 
 model JournalEntry {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   title     String
   content   String
   category  String
@@ -35,7 +35,7 @@ model JournalEntry {
 
 
 model RefreshToken {
-  id        Int       @id @default(autoincrement())
+  id        String       @id @default(uuid())
   token     String
   expiry    DateTime
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
