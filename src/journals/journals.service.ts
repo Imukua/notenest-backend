@@ -69,4 +69,23 @@ export class JournalsService {
         return entries;
 
     }
+
+
+    async getJournalEntry(userId: string, journalId: string) {
+        const entry = await this.prismaService.journalEntry.findUnique({
+            where: {
+                id: journalId
+            }
+        })
+
+        if(!entry) {
+            throw new HttpException('Journal entry not found', 404)
+        }
+
+        if (entry.userId !== userId) {
+            throw new NotFoundException(`You do not have permission to view this journal entry`);
+          }
+    
+        return entry;
+    }
 }

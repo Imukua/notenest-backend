@@ -41,6 +41,13 @@ export class JournalsController {
         const userId = req.user.id;
         return this.journalsService.getAllJournalEntries(userId, pageInt, limitInt);
     }
+
+    @UseGuards(JwtAuthGuard)
+    @Get(':id')
+    getOne(@Param("id") id:string, @Req() req: Request) {
+        const user = req.user
+        return this.journalsService.getJournalEntry(user.id,id)
+    }
         
 
 }
