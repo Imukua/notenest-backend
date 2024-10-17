@@ -58,12 +58,15 @@ export class JournalsService {
    
     }
 
-    async getAllJournalEntries(userId: string) {
-        return await this.prismaService.journalEntry.findMany({
-            where: {
-                userId
-            }
-        })
+    async getAllJournalEntries(userId: string, page: number, limit: number) {
+        const skip = (page - 1) * limit;
+        const entries = await this.prismaService.journalEntry.findMany({
+            where: {userId},    
+            skip,
+            take: limit,
+        });
+
+        return entries;
 
     }
 }

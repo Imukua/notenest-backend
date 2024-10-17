@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create.journal.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
@@ -30,9 +30,16 @@ export class JournalsController {
 
     @UseGuards(JwtAuthGuard)
     @Get()
-    getAll(@Req() req: Request) {
-      const userId = req.user.id;
-      return this.journalsService.getAllJournalEntries(userId);
+    getAll(
+        @Query('page')  page: string,
+        @Query('limit') limit: string,
+        @Req() req: Request
+    ) {
+    
+        const pageInt = parseInt(page, 10) || 1;
+        const limitInt = parseInt(limit, 10) || 10;
+        const userId = req.user.id;
+        return this.journalsService.getAllJournalEntries(userId, pageInt, limitInt);
     }
         
 
