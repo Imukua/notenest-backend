@@ -28,6 +28,12 @@ export class JournalsController {
        return this.journalsService.updateJournalEntry(user.id,id, body)
     }
 
-
+    @UseGuards(JwtAuthGuard)
+    @Get()
+    getAll(@Req() req: Request) {
+      const userId = req.user.id;
+      return this.journalsService.getAllJournalEntries(userId);
+    }
+        
 
 }

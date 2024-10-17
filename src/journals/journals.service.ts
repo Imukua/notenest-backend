@@ -58,5 +58,12 @@ export class JournalsService {
    
     }
 
-  
+    async getAllJournalEntries(userId: string) {
+        return await this.prismaService.journalEntry.findMany({
+            where: {
+                userId
+            }
+        })
+
+    }
 }
