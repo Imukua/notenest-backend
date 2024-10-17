@@ -58,12 +58,45 @@ export class JournalsService {
    
     }
 
-    async getAllJournalEntries(userId: string, page: number, limit: number) {
+    async getAllJournalEntries(
+        userId: string,
+        page: number,
+        limit: number,
+        search?: string,
+        category?: string,
+        startDate?: string,
+        endDate?: string
+    ) {
         const skip = (page - 1) * limit;
+
+        const filters: any = {
+            userId,
+
+        }
+
+        if(search){
+            filters.OR = [
+                {title: {contains: search, mode: "insensitive"}},
+            ];
+        }
+
+        if (category) {
+            filters.category = category;
+        }
+
+        if(startDate && endDate) {
+            filters.date = {
+                gte: new Date(startDate),
+                lte: new Date(endDate)
+            }
+        }
+
+
         const entries = await this.prismaService.journalEntry.findMany({
-            where: {userId},    
+            where: filters,    
             skip,
             take: limit,
+            orderBy: { date: 'desc' },
         });
 
         return entries;

@@ -33,13 +33,18 @@ export class JournalsController {
     getAll(
         @Query('page')  page: string,
         @Query('limit') limit: string,
-        @Req() req: Request
+        @Req() req: Request,
+        @Query("search") search?: string,
+        @Query("category") category?: string,
+        @Query("startDate") startDate?: string,
+        @Query("endDate") endDate?: string,  
+        
     ) {
     
         const pageInt = parseInt(page, 10) || 1;
         const limitInt = parseInt(limit, 10) || 10;
         const userId = req.user.id;
-        return this.journalsService.getAllJournalEntries(userId, pageInt, limitInt);
+        return this.journalsService.getAllJournalEntries(userId, pageInt, limitInt, search, category, startDate, endDate);
     }
 
     @UseGuards(JwtAuthGuard)
