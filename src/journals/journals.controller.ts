@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create.journal.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
@@ -47,6 +47,14 @@ export class JournalsController {
     getOne(@Param("id") id:string, @Req() req: Request) {
         const user = req.user
         return this.journalsService.getJournalEntry(user.id,id)
+    }
+
+
+    @UseGuards(JwtAuthGuard)
+    @Delete(':id')
+    delete(@Param("id") id:string, @Req() req: Request) {
+        const user = req.user
+        return this.journalsService.deleteJournalEntry(user.id,id)
     }
         
 

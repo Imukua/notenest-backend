@@ -85,4 +85,22 @@ export class JournalsService {
     
         return entry;
     }
+
+    async deleteJournalEntry(userId: string, id: string): Promise<void> {
+        const journalEntry = await this.prismaService.journalEntry.findUnique({
+            where: {
+                id,
+                userId, 
+            },
+        });
+    
+        if (!journalEntry) {
+            throw new NotFoundException('Journal entry not found');
+        }
+    
+        await this.prismaService.journalEntry.delete({
+            where: { id },
+        });
+    }
+    
 }
