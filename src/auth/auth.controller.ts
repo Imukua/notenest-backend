@@ -7,6 +7,8 @@ import { JwtAuthGuard } from './guards/jwt.guard';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { UpdateUsernameDto } from './dto/update.username.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { refreshTokenDto } from './dto/refresf.dto';
+import { JwtRefreshGuard } from './guards/jwt.refresh.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +30,13 @@ export class AuthController {
   logout(@Req() req: Request) {
     console.log(req.user);
     return this.authService.logout(req.user);
+  }
+  
+  @UseGuards(JwtRefreshGuard)
+  @Post('refresh')
+  refresh(@Body() body: refreshTokenDto, @Req() req: Request) {
+    const user = req.user as JwtPayload;
+    return this.authService.refresh(user.id,body);
   }
 
   @Patch('username')
