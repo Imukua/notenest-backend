@@ -6,12 +6,14 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { UpdateUsernameDto } from './dto/update.username.dto';
+import { refreshTokenDto } from './dto/refresf.dto';
+import { ConfigService } from '@nestjs/config';
 
 
 
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService, private prismaservice: PrismaService) {}
+    constructor(private jwtService: JwtService, private prismaservice: PrismaService, private configService: ConfigService) {}
 
     private async hashPassword(password: string): Promise<string> {
       const saltRounds = 10;
@@ -40,7 +42,6 @@ export class AuthService {
       return safeUser;
   }
 
-
     async login({username, password}: AuthPayloadDto) {
       const existingUser = await this.prismaservice.user.findUnique({
         where: {
@@ -56,12 +57,12 @@ export class AuthService {
         const{passwordHash , ...payload} = existingUser;
 
         const accessToken = this.jwtService.sign(payload, {
-            secret: "process.env.JWT_ACCESS_TOKEN_SECRET",
+            secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
             expiresIn: '15m',
           });
       
           const refreshToken = this.jwtService.sign(payload, {
-            secret: "process.env.JWT_REFRESH_TOKEN_SECRET",
+            secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
             expiresIn: '7d',
           });
 
@@ -91,7 +92,37 @@ export class AuthService {
       });
     }
 
-    async updateUsername(userId,updateUsernameDto: UpdateUsernameDto): Promise<void> {
+    async refresh(userId: string, body: refreshTokenDto){
+      const {refreshToken} = body;
+      const existingToken =  await this.prismaservice.refreshToken.findFirst({
+        where: {
+          token: refreshToken,
+          userId: userId
+        }
+      })
+
+      if (!existingToken) {
+        throw new HttpException('Invalid refresh token', 400);
+      }
+
+      const user = await this.prismaservice.user.findUnique({
+        where: {
+          id: userId
+        } 
+      })
+
+      const { passwordHash, ...payload } = user;
+      const accessToken = this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+        expiresIn: '15m',
+      })
+
+      return {
+        accessToken
+      
+    }
+  }
+    async updateUsername(userId: string,updateUsernameDto: UpdateUsernameDto): Promise<void> {
       const { newUsername } = updateUsernameDto;
   
       // Check if the new username is already taken
@@ -110,7 +141,7 @@ export class AuthService {
       });
     }
   
-    async updatePassword(userId,updatePasswordDto: UpdatePasswordDto): Promise<void> {
+    async updatePassword(userId: string,updatePasswordDto: UpdatePasswordDto): Promise<void> {
       const { currentPassword, newPassword } = updatePasswordDto;
   
       // Find the user
@@ -137,7 +168,7 @@ export class AuthService {
         data: { passwordHash: hashedNewPassword },
       });
     }
-    async deleteExpiredTokens(userId): Promise<void> {
+    async deleteExpiredTokens(userId: string): Promise<void> {
       await this.prismaservice.refreshToken.deleteMany({
         where: {
           userId,
@@ -148,7 +179,7 @@ export class AuthService {
       });
     }
   
-    async createRefreshToken(userId, token: string, expiry: Date): Promise<{}> {
+    async createRefreshToken(userId: string, token: string, expiry: Date): Promise<{}> {
       return this.prismaservice.refreshToken.create({
         data: {
           token,

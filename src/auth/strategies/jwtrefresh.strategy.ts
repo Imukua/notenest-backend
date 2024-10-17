@@ -11,16 +11,16 @@ export interface JwtPayload {
 }
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwtrefresh') {
   constructor( private configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get('JWT_ACCESS_TOKEN_SECRET'),
+      secretOrKey: configService.get('JWT_REFRESH_TOKEN_SECRET'),
     });
   }
 
   validate(payload: JwtPayload) {
-   return { id: payload.id, username: payload.username };
+    return { id: payload.id, username: payload.username };
   }
 }
