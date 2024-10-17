@@ -15,12 +15,12 @@ datasource db {
 
 
 model User {
-  id            Int             @id @default(autoincrement())
+  id            String             @id @default(uuid())
   username      String          @unique
   passwordHash  String
   createdAt     DateTime        @default(now())
   journalEntries JournalEntry[]  @relation("UserJournalEntries")
-  refreshTokens RefreshToken[]
+  refreshTokens RefreshToken[]   
 }
 
 model JournalEntry {
@@ -29,7 +29,7 @@ model JournalEntry {
   content   String
   category  String
   date      DateTime @default(now())
-  userId    Int
+  userId    String
   user      User     @relation("UserJournalEntries", fields: [userId], references: [id])
 }
 
@@ -39,7 +39,7 @@ model RefreshToken {
   token     String
   expiry    DateTime
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
+  userId    String
   createdAt DateTime  @default(now())
 }
 
