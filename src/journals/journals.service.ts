@@ -94,6 +94,7 @@ async getAllJournalEntries(
     const totalEntries = await this.prismaService.journalEntry.count({
         where: filters,
     });
+    const totalPages = Math.ceil(totalEntries / limit);
 
     // Fetch the journal entries with pagination
     const entries = await this.prismaService.journalEntry.findMany({
@@ -117,12 +118,12 @@ async getAllJournalEntries(
 
     // Calculate if there is a next page
     const hasNextPage = skip + limit < totalEntries;
-    const nextPage = hasNextPage ? page + 1 : null;
 
     return {
         entries,
         totalEntries,
-        nextPage,
+        hasNextPage,
+        totalPages,
         categoryCounts: {
             PersonalDevelopment: categoryCounts.find(c => c.category === 'Personal Development')?._count.category || 0,
             Work: categoryCounts.find(c => c.category === 'Work')?._count.category || 0,
