@@ -8,6 +8,7 @@ import { UpdatePasswordDto } from './dto/update.password.dto';
 import { UpdateUsernameDto } from './dto/update.username.dto';
 import { refreshTokenDto } from './dto/refresf.dto';
 import { ConfigService } from '@nestjs/config';
+import { UpdateProfileDto } from './dto/update.profile.dto';
 
 
 
@@ -168,6 +169,35 @@ export class AuthService {
         data: { passwordHash: hashedNewPassword },
       });
     }
+
+
+
+    async updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<void> {
+      const user = await this.prismaservice.user.findUnique({
+        where: { id: userId },
+      });
+    
+      if (!user) {
+        throw new HttpException('User not found', 400);
+      }
+    
+      const updateData: { username?: string; passwordHash?: string } = {};
+    
+      if (updateProfileDto.username) {
+        updateData.username = updateProfileDto.username;
+      }
+    
+      if (updateProfileDto.password) {
+        const hashedNewPassword = await bcrypt.hash(updateProfileDto.password, 10);
+        updateData.passwordHash = hashedNewPassword;
+      }
+    
+      await this.prismaservice.user.update({
+        where: { id: userId },
+        data: updateData,
+      });
+    }
+    
     async deleteExpiredTokens(userId: string): Promise<void> {
       await this.prismaservice.refreshToken.deleteMany({
         where: {

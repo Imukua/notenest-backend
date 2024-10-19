@@ -9,6 +9,7 @@ import { UpdateUsernameDto } from './dto/update.username.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { refreshTokenDto } from './dto/refresf.dto';
 import { JwtRefreshGuard } from './guards/jwt.refresh.guard';
+import { UpdateProfileDto } from './dto/update.profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -61,6 +62,17 @@ export class AuthController {
     const user = req.user as JwtPayload; //// Extract user ID from the request
     await this.authService.updatePassword(user.id, updatePasswordDto);
     return { message: 'Password updated successfully' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  async updateProfile(
+    @Req() req: Request,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    const user = req.user as JwtPayload; //// Extract user ID from the request
+    await this.authService.updateProfile(user.id, updateProfileDto);
+    return { message: 'Profile updated successfully' };
   }
 
 }
