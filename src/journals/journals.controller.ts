@@ -42,7 +42,7 @@ export class JournalsController {
     ) {
     
         const pageInt = parseInt(page, 10) || 1;
-        const limitInt = parseInt(limit, 10) || 10;
+        const limitInt = parseInt(limit, 10) || 5;
         const userId = req.user.id;
         return this.journalsService.getAllJournalEntries(userId, pageInt, limitInt, search, category, startDate, endDate);
     }
