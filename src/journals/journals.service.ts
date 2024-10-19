@@ -58,50 +58,78 @@ export class JournalsService {
    
     }
 
-    async getAllJournalEntries(
-        userId: string,
-        page: number,
-        limit: number,
-        search?: string,
-        category?: string,
-        startDate?: string,
-        endDate?: string
-    ) {
-        const skip = (page - 1) * limit;
+async getAllJournalEntries(
+    userId: string,
+    page: number,
+    limit: number,
+    search?: string,
+    category?: string,
+    startDate?: string,
+    endDate?: string
+) {
+    const skip = (page - 1) * limit;
 
-        const filters: any = {
-            userId,
+    const filters: any = {
+        userId,
+    };
 
-        }
-
-        if(search){
-            filters.OR = [
-                {title: {contains: search, mode: "insensitive"}},
-            ];
-        }
-
-        if (category) {
-            filters.category = category;
-        }
-
-        if(startDate && endDate) {
-            filters.date = {
-                gte: new Date(startDate),
-                lte: new Date(endDate)
-            }
-        }
-
-
-        const entries = await this.prismaService.journalEntry.findMany({
-            where: filters,    
-            skip,
-            take: limit,
-            orderBy: { date: 'desc' },
-        });
-
-        return entries;
-
+    if (search) {
+        filters.OR = [
+            { title: { contains: search, mode: "insensitive" } },
+        ];
     }
+
+    if (category) {
+        filters.category = category;
+    }
+
+    if (startDate && endDate) {
+        filters.date = {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+        };
+    }
+
+    // Get the total count of entries with the same filters
+    const totalEntries = await this.prismaService.journalEntry.count({
+        where: filters,
+    });
+
+    // Fetch the journal entries with pagination
+    const entries = await this.prismaService.journalEntry.findMany({
+        where: filters,
+        skip,
+        take: limit,
+        orderBy: { date: 'desc' },
+    });
+
+    // Get the count of entries for specific categories
+    const categoryCounts = await this.prismaService.journalEntry.groupBy({
+        by: ['category'],
+        where: { userId }, // Ensure the count is specific to the user
+        _count: {
+            category: true,
+        },
+        having: {
+            category: { in: ['Personal Development', 'Work', 'Travel'] },
+        },
+    });
+
+    // Calculate if there is a next page
+    const hasNextPage = skip + limit < totalEntries;
+    const nextPage = hasNextPage ? page + 1 : null;
+
+    return {
+        entries,
+        totalEntries,
+        nextPage,
+        categoryCounts: {
+            PersonalDevelopment: categoryCounts.find(c => c.category === 'Personal Development')?._count.category || 0,
+            Work: categoryCounts.find(c => c.category === 'Work')?._count.category || 0,
+            Travel: categoryCounts.find(c => c.category === 'Travel')?._count.category || 0,
+        },
+    };
+}
 
 
     async getJournalEntry(userId: string, journalId: string) {
