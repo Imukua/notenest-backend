@@ -93,24 +93,18 @@ export class AuthService {
       });
     }
 
-    async refresh(userId: string, body: refreshTokenDto){
-      const {refreshToken} = body;
-      const existingToken =  await this.prismaservice.refreshToken.findFirst({
-        where: {
-          token: refreshToken,
-          userId: userId
-        }
-      })
+    async refresh(userId: string){
 
-      if (!existingToken) {
-        throw new HttpException('Invalid refresh token', 400);
-      }
 
       const user = await this.prismaservice.user.findUnique({
         where: {
           id: userId
         } 
       })
+
+      if (!user) {
+        throw new HttpException('User not found', 400);
+      }
 
       const { passwordHash, ...payload } = user;
       const accessToken = this.jwtService.sign(payload, {
