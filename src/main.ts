@@ -10,7 +10,7 @@ async function bootstrap() {
   const corsOrigin = configService.get<string>('CORS_ORIGIN', '*'); // Default to all origins if not set
 
   app.enableCors({
-    origin: ["https://notenestd.vercel.app"],
+    origin: corsOrigin,
     credentials: true,
   });
 
