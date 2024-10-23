@@ -36,9 +36,15 @@ async function bootstrap() {
   
   // Vercel can't properly serve the Swagger UI CSS from its npm package, here we
   // load it from a public location
-  const options = { customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.3/swagger-ui.css' };
+  const options = {
+    customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.3/swagger-ui.css',
+    customJs: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.3/swagger-ui-bundle.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.3/swagger-ui-standalone-preset.js'
+    ]
+  };
   
-  SwaggerModule.setup('', app, document, options);
+  SwaggerModule.setup('api-docs', app, document, options);
 
   app.enableCors({
     origin: corsOrigin, 
