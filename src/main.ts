@@ -8,9 +8,13 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   
   const port = configService.get<number>('PORT', 3000); // Default to 3000 if not set
-  const corsOrigin = configService.get<string>('CORS_ORIGIN', '*'); // Default to all origins if not set
+  const corsOrigin = configService.get<string>('CORS_ORIGIN', 'https://notenestd.vercel.app'); // Default to all origins if not set
 
-  console.log('Configured CORS Origin:', corsOrigin);
+
+  app.enableCors({
+    origin: corsOrigin, 
+    credentials: true,
+  });
 
   // Swagger setup
   const config = new DocumentBuilder()
@@ -48,33 +52,6 @@ async function bootstrap() {
   
   SwaggerModule.setup('api-docs', app, document, options);
 
-  app.enableCors({
-    origin: (origin, callback) => {
-      console.log('Incoming request from origin:', origin);
-      if (!origin || corsOrigin === '*') {
-        callback(null, true);
-        return;
-      }
-      const allowedOrigins = corsOrigin.split(',');
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        console.log('Origin not allowed:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  });
-
-  app.use((req, res, next) => {
-    console.log('Request:', {
-      method: req.method,
-      path: req.path,
-      origin: req.get('origin'),
-      headers: req.headers,
-    });
-    next();
-  });
 
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
