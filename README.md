@@ -2,6 +2,13 @@
 
 NoteNest is a powerful and intuitive note-taking application built with NestJS and PostgreSQL. It allows users to create, manage, and organize their notes efficiently. This README provides a comprehensive guide on how to set up, run, and use the application.
 
+## Live Links
+
+- Frontend: [https://notenestd.vercel.app/](https://notenestd.vercel.app/)
+- Backend API Documentation: [https://notenest-backend-dev.vercel.app/api-docs#/](https://notenest-backend-dev.vercel.app/api-docs#/)
+
+These links provide access to the live version of NoteNest. The frontend link allows you to interact with the application directly, while the backend API documentation link provides detailed information about the available endpoints and how to use them.
+
 ## Features
 
 - User authentication (register, login, logout)
@@ -133,3 +140,5 @@ Please read the CONTRIBUTING.md file (if available) for details on our code of c
 ## License
 
 This project's license information is not provided in the given files. Consider adding a LICENSE.md file to your project.
+
+
