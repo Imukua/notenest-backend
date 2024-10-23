@@ -8,7 +8,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   
   const port = configService.get<number>('PORT', 3000); // Default to 3000 if not set
-  const corsOrigin = configService.get<string>('CORS_ORIGIN', 'https://notenestd.vercel.app'); // Default to all origins if not set
+  const corsOrigin = configService.get<string>('CORS_ORIGIN', 'https://notenestd.vercel.app/'); // Default to all origins if not set
 
 
   app.enableCors({
