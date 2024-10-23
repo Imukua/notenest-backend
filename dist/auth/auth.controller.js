@@ -22,18 +22,18 @@ const update_password_dto_1 = require("./dto/update.password.dto");
 const update_username_dto_1 = require("./dto/update.username.dto");
 const jwt_refresh_guard_1 = require("./guards/jwt.refresh.guard");
 const update_profile_dto_1 = require("./dto/update.profile.dto");
+const swagger_1 = require("@nestjs/swagger");
 let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
-    login(req) {
+    async login(req) {
         return req.user;
     }
-    register(body) {
-        return this.authService.register(body);
+    async register(authPayloadDto) {
+        return this.authService.register(authPayloadDto);
     }
-    logout(req) {
-        console.log(req.user);
+    async logout(req) {
         return this.authService.logout(req.user);
     }
     refresh(req) {
@@ -59,27 +59,35 @@ let AuthController = class AuthController {
 };
 exports.AuthController = AuthController;
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'User login' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Return JWT tokens' }),
     (0, common_1.UseGuards)(local_guard_1.LocalGuard),
     (0, common_1.Post)('login'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'User registration' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'User successfully created' }),
     (0, common_1.Post)('register'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [auth_dto_1.AuthPayloadDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([
-    (0, common_1.UseGuards)(local_guard_1.LocalGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'User logout' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'User successfully logged out' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
     (0, common_1.Post)('logout'),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_refresh_guard_1.JwtRefreshGuard),
@@ -117,6 +125,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "updateProfile", null);
 exports.AuthController = AuthController = __decorate([
+    (0, swagger_1.ApiTags)('auth'),
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);

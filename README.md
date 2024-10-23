@@ -111,83 +111,20 @@ If problems persist, please open an issue on the GitHub repository.
 
 ## API Documentation
 
-NoteNest provides the following API endpoints:
+NoteNest provides interactive API documentation using Swagger UI. To access the documentation:
 
-### Authentication
+1. Start the application
+2. Open your browser and navigate to `http://localhost:3000`
+3. You will see the Swagger UI interface with all available endpoints
+4. You can try out the API directly from this interface
 
-- `POST /auth/login`: Log in a user
-  - Requires: `username`, `password`
-  - Returns: User information and tokens
+The Swagger UI provides detailed information about each endpoint, including:
+- Required parameters
+- Request body schemas
+- Response schemas
+- Authentication requirements
 
-- `POST /auth/register`: Register a new user
-  - Requires: `username`, `password`
-  - Returns: User information and tokens
-
-- `POST /auth/logout`: Log out a user (requires authentication)
-  - Returns: Logout confirmation
-
-- `POST /auth/refresh`: Refresh the access token (requires refresh token)
-  - Returns: New access token
-
-- `PATCH /auth/username`: Update user's username (requires authentication)
-  - Requires: `newUsername`
-  - Returns: HTTP 200 OK status
-
-- `PATCH /auth/password`: Update user's password (requires authentication)
-  - Requires: `currentPassword`, `newPassword`
-  - Returns: Password update confirmation
-
-- `PATCH /auth/profile`: Update user's profile (requires authentication)
-  - Requires: `username`, `password`
-  - Returns: Profile update confirmation
-
-### Journals
-
-All journal endpoints require authentication using a JWT token.
-
-- `POST /journals/create`: Create a new journal entry
-  - Requires: `title`, `content`, `category`
-  - Returns: Created journal entry
-
-- `PATCH /journals/:id`: Update a journal entry
-  - Requires: `id` (in URL), optional: `title`, `content`, `category`
-  - Returns: Updated journal entry
-
-- `GET /journals`: Get all journal entries (with pagination and filtering)
-  - Query parameters:
-    - `page`: Page number (default: 1)
-    - `limit`: Number of items per page (default: 5)
-    - `search`: Search term (optional)
-    - `category`: Filter by category (optional)
-    - `startDate`: Filter by start date (optional)
-    - `endDate`: Filter by end date (optional)
-  - Returns: Paginated list of journal entries
-
-- `GET /journals/:id`: Get a specific journal entry
-  - Requires: `id` (in URL)
-  - Returns: Journal entry details
-
-- `DELETE /journals/:id`: Delete a journal entry
-  - Requires: `id` (in URL)
-  - Returns: Deletion confirmation
-
-All requests that require authentication should include a valid JWT token in the Authorization header:
-```
-Authorization: Bearer <your_jwt_token>
-```
-
-For detailed information on request/response formats, please refer to the respective DTO (Data Transfer Object) files:
-- Authentication DTOs: `src/auth/dto/`
-  - `auth.dto.ts`
-  - `update.password.dto.ts`
-  - `update.username.dto.ts`
-  - `update.profile.dto.ts`
-  - `refresh.dto.ts`
-- Journal DTOs: `src/journals/dto/`
-  - `create.journal.dto.ts`
-  - `update.journal.dto.ts`
-
-Note: Error responses will include appropriate HTTP status codes and error messages.
+This makes it easy to understand and interact with the NoteNest API.
 
 ## Contributing
 

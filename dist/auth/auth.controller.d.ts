@@ -8,8 +8,8 @@ import { UpdateProfileDto } from './dto/update.profile.dto';
 export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
-    login(req: Request): Express.User;
-    register(body: AuthPayloadDto): Promise<{
+    login(req: Request): Promise<Express.User>;
+    register(authPayloadDto: AuthPayloadDto): Promise<{
         username: string;
     }>;
     logout(req: Request): Promise<void>;

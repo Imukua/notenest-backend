@@ -12,12 +12,20 @@ const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const auth_module_1 = require("./auth/auth.module");
 const journals_module_1 = require("./journals/journals.module");
+const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule, journals_module_1.JournalsModule],
+        imports: [
+            config_1.ConfigModule.forRoot({
+                envFilePath: process.env.NODE_ENV === 'development' ? '.env.development' : '.env',
+                isGlobal: true,
+            }),
+            auth_module_1.AuthModule,
+            journals_module_1.JournalsModule,
+        ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

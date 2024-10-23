@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Req, UseGuards, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalGuard } from './guards/local.guard';
 import { Request } from 'express';
@@ -10,26 +10,35 @@ import { JwtPayload } from './strategies/jwt.strategy';
 import { refreshTokenDto } from './dto/refresf.dto';
 import { JwtRefreshGuard } from './guards/jwt.refresh.guard';
 import { UpdateProfileDto } from './dto/update.profile.dto';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiOperation({ summary: 'User login' })
+  @ApiResponse({ status: 200, description: 'Return JWT tokens' })
   @UseGuards(LocalGuard)
   @Post('login')
-  login(@Req() req: Request) {
+  @HttpCode(HttpStatus.OK)
+  async login(@Req() req: Request) {
     return req.user;
   }
 
+  @ApiOperation({ summary: 'User registration' })
+  @ApiResponse({ status: 201, description: 'User successfully created' })
   @Post('register')
-  register(@Body() body: AuthPayloadDto) {
-    return this.authService.register(body);
+  async register(@Body() authPayloadDto: AuthPayloadDto) {
+    return this.authService.register(authPayloadDto);
   }
 
-  @UseGuards(LocalGuard)
+  @ApiOperation({ summary: 'User logout' })
+  @ApiResponse({ status: 200, description: 'User successfully logged out' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
-  logout(@Req() req: Request) {
-    console.log(req.user);
+  async logout(@Req() req: Request) {
     return this.authService.logout(req.user);
   }
   
