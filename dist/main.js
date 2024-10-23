@@ -8,9 +8,10 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const configService = app.get(config_1.ConfigService);
     const port = configService.get('PORT', 3000);
-    const corsOrigin = configService.get('CORS_ORIGIN', 'https://notenestd.vercel.app/');
+    const corsOrigin = configService.get('CORS_ORIGIN', 'https://notenestd.vercel.app');
     app.enableCors({
         origin: corsOrigin,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
     });
     const config = new swagger_1.DocumentBuilder()
