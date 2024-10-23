@@ -9,6 +9,7 @@ async function bootstrap() {
     const configService = app.get(config_1.ConfigService);
     const port = configService.get('PORT', 3000);
     const corsOrigin = configService.get('CORS_ORIGIN', '*');
+    console.log('Configured CORS Origin:', corsOrigin);
     const config = new swagger_1.DocumentBuilder()
         .setTitle('NoteNest API')
         .setDescription(`
@@ -40,8 +41,31 @@ async function bootstrap() {
     };
     swagger_1.SwaggerModule.setup('api-docs', app, document, options);
     app.enableCors({
-        origin: corsOrigin,
+        origin: (origin, callback) => {
+            console.log('Incoming request from origin:', origin);
+            if (!origin || corsOrigin === '*') {
+                callback(null, true);
+                return;
+            }
+            const allowedOrigins = corsOrigin.split(',');
+            if (allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            }
+            else {
+                console.log('Origin not allowed:', origin);
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
+    });
+    app.use((req, res, next) => {
+        console.log('Request:', {
+            method: req.method,
+            path: req.path,
+            origin: req.get('origin'),
+            headers: req.headers,
+        });
+        next();
     });
     await app.listen(port);
     console.log(`Application is running on: ${await app.getUrl()}`);
