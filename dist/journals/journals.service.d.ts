@@ -5,27 +5,27 @@ export declare class JournalsService {
     private prismaService;
     constructor(prismaService: PrismaService);
     createJournalEntry(userId: string, data: CreateJournalDto): Promise<{
-        id: string;
         title: string;
-        content: string;
+        id: string;
         userId: string;
+        content: string;
         category: string;
         date: Date;
     }>;
     updateJournalEntry(userId: string, journalId: string, data: UpdateJournalDto): Promise<{
-        id: string;
         title: string;
-        content: string;
+        id: string;
         userId: string;
+        content: string;
         category: string;
         date: Date;
     }>;
     getAllJournalEntries(userId: string, page: number, limit: number, search?: string, category?: string, startDate?: string, endDate?: string): Promise<{
         entries: {
-            id: string;
             title: string;
-            content: string;
+            id: string;
             userId: string;
+            content: string;
             category: string;
             date: Date;
         }[];
@@ -39,10 +39,10 @@ export declare class JournalsService {
         };
     }>;
     getJournalEntry(userId: string, journalId: string): Promise<{
-        id: string;
         title: string;
-        content: string;
+        id: string;
         userId: string;
+        content: string;
         category: string;
         date: Date;
     }>;
